@@ -349,11 +349,13 @@ public class SoundStreamPlugin : FlutterPlugin,
         }
 
         val audioAttributes = AudioAttributes.Builder()
-        mAudioTrack = AudioTrack(audioAttributes, mPlayerFormat, mPlayerBufferSize, AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE)
             .setLegacyStreamType(AudioManager.STREAM_MUSIC)
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .build()
+
+        mAudioTrack = AudioTrack(audioAttributes, mPlayerFormat, mPlayerBufferSize, AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE)
+
 
         result.success(true)
         sendPlayerStatus(SoundStreamStatus.Initialized)
