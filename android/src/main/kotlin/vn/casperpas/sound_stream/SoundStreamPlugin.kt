@@ -6,6 +6,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.*
 import android.media.AudioRecord.OnRecordPositionUpdateListener
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
@@ -23,6 +26,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.ShortBuffer
+import java.util.*
 
 const val methodChannelName = "vn.casperpas.sound_stream:methods"
 
@@ -58,22 +62,28 @@ public class SoundStreamPlugin : FlutterPlugin,
 
     //========= Recorder's vars
     private val mRecordFormat = AudioFormat.ENCODING_PCM_16BIT
-    private var mRecordSampleRate = 16000 // 16Khz
+    private var mRecordSampleRate = 8000 // 16Khz
     private var mRecorderBufferSize = 8192
     private var mPeriodFrames = 8192
-    private var audioData: ShortArray? = null
+    private var audioData: ByteArray? = null
     private var mRecorder: AudioRecord? = null
     private var mListener: OnRecordPositionUpdateListener? = null
 
     //========= Player's vars
     private var mAudioTrack: AudioTrack? = null
-    private var mPlayerSampleRate = 16000 // 16Khz
+    private var mPlayerSampleRate = 8000 // 16Khz
     private var mPlayerBufferSize = 10240
     private var mPlayerFormat: AudioFormat = AudioFormat.Builder()
             .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
             .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
             .setSampleRate(mPlayerSampleRate)
             .build()
+
+    private var mBlockThread: WriteBlockThread? = null
+    private var handler: Handler? = null
+    private var p: Runnable? = null
+
+    private var isRecording: Boolean = false
 
     /** ======== Basic Plugin initialization ======== **/
 
@@ -111,6 +121,7 @@ public class SoundStreamPlugin : FlutterPlugin,
                 "startPlayer" -> startPlayer(result)
                 "stopPlayer" -> stopPlayer(result)
                 "writeChunk" -> writeChunk(call, result)
+                "feed" -> feed(call, result)
                 else -> result.notImplemented()
             }
         } catch (e: Exception) {
@@ -179,8 +190,10 @@ public class SoundStreamPlugin : FlutterPlugin,
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?,
-                                            grantResults: IntArray?): Boolean {
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>?,
+        grantResults: IntArray?
+    ): Boolean {
         when (requestCode) {
             audioRecordPermissionCode -> {
                 if (grantResults != null) {
@@ -199,7 +212,7 @@ public class SoundStreamPlugin : FlutterPlugin,
         debugLogging = call.argument<Boolean>("showLogs") ?: false
         mPeriodFrames = AudioRecord.getMinBufferSize(mRecordSampleRate, AudioFormat.CHANNEL_IN_MONO, mRecordFormat)
         mRecorderBufferSize = mPeriodFrames * 2
-        audioData = ShortArray(mPeriodFrames)
+        audioData = ByteArray(mRecorderBufferSize)
         activeResult = result
 
         val localContext = pluginContext
@@ -207,8 +220,13 @@ public class SoundStreamPlugin : FlutterPlugin,
             completeInitializeRecorder()
             return
         }
-        permissionToRecordAudio = ContextCompat.checkSelfPermission(localContext,
-                Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+
+        handler = Handler(Looper.getMainLooper())
+
+        permissionToRecordAudio = ContextCompat.checkSelfPermission(
+            localContext,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
         if (!permissionToRecordAudio) {
             requestRecordPermission()
         } else {
@@ -222,12 +240,18 @@ public class SoundStreamPlugin : FlutterPlugin,
         if (mRecorder?.state == AudioRecord.STATE_INITIALIZED) {
             return
         }
-        mRecorder = AudioRecord(MediaRecorder.AudioSource.MIC, mRecordSampleRate, AudioFormat.CHANNEL_IN_MONO, mRecordFormat, mRecorderBufferSize)
-        if (mRecorder != null) {
-            mListener = createRecordListener()
-            mRecorder?.positionNotificationPeriod = mPeriodFrames
-            mRecorder?.setRecordPositionUpdateListener(mListener)
-        }
+        mRecorder = AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            mRecordSampleRate,
+            AudioFormat.CHANNEL_IN_MONO,
+            mRecordFormat,
+            mRecorderBufferSize
+        )
+//        if (mRecorder != null) {
+//            mListener = createRecordListener()
+//            mRecorder?.positionNotificationPeriod = mPeriodFrames
+//            mRecorder?.setRecordPositionUpdateListener(mListener)
+//        }
     }
 
     private fun completeInitializeRecorder() {
@@ -270,7 +294,18 @@ public class SoundStreamPlugin : FlutterPlugin,
             }
             initRecorder()
             mRecorder!!.startRecording()
+            isRecording = true
+
             sendRecorderStatus(SoundStreamStatus.Playing)
+
+            p = Runnable {
+                if(isRecording) {
+                    var n = writeBuffer(mRecorderBufferSize)
+                }
+            }
+
+            handler?.post(p)
+
             result.success(true)
         } catch (e: IllegalStateException) {
             debugLog("record() failed")
@@ -285,6 +320,7 @@ public class SoundStreamPlugin : FlutterPlugin,
                 return
             }
             mRecorder!!.stop()
+            isRecording = false
             sendRecorderStatus(SoundStreamStatus.Stopped)
             result.success(true)
         } catch (e: IllegalStateException) {
@@ -313,11 +349,12 @@ public class SoundStreamPlugin : FlutterPlugin,
         }
 
         val audioAttributes = AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
-                .build()
         mAudioTrack = AudioTrack(audioAttributes, mPlayerFormat, mPlayerBufferSize, AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE)
+            .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build()
+
         result.success(true)
         sendPlayerStatus(SoundStreamStatus.Initialized)
     }
@@ -328,6 +365,19 @@ public class SoundStreamPlugin : FlutterPlugin,
             pushPlayerChunk(data, result)
         } else {
             result.error(SoundStreamErrors.FailedToWriteBuffer.name, "Failed to write Player buffer", "'data' is null")
+        }
+    }
+
+    private fun feed(@NonNull call: MethodCall, @NonNull result: Result) {
+        val data = call.argument<ByteArray>("data")
+        if (data != null) {
+            feedChunk(data, result)
+        } else {
+            result.error(
+                SoundStreamErrors.FailedToWriteBuffer.name,
+                "Failed to write Player buffer",
+                "'data' is null"
+            )
         }
     }
 
@@ -344,6 +394,68 @@ public class SoundStreamPlugin : FlutterPlugin,
             result.error(SoundStreamErrors.FailedToWriteBuffer.name, "Failed to write Player buffer", e.localizedMessage)
         }
     }
+
+    private fun feedChunk(chunk: ByteArray, result: Result) {
+        try {
+//            val buffer = ByteBuffer.wrap(chunk)
+//            val shortBuffer = ShortBuffer.allocate(chunk.size / 2)
+//            shortBuffer.put(buffer.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer())
+//            val shortChunk = shortBuffer.array()
+
+            val ln: Int = if (Build.VERSION.SDK_INT >= 23) {
+                mAudioTrack?.write(chunk, 0, AudioTrack.WRITE_NON_BLOCKING)!!
+            } else
+                0
+
+            if (ln == 0) {
+                if (mBlockThread != null) {
+                    debugLog("Audio packet lost !!!")
+                }
+//
+                mBlockThread = WriteBlockThread(chunk)
+                mBlockThread?.start()
+            }
+            result.success(ln)
+        } catch (e: Exception) {
+            result.error(
+                SoundStreamErrors.FailedToWriteBuffer.name,
+                "Failed to write Player buffer",
+                e.localizedMessage
+            )
+        }
+    }
+
+
+
+    inner class WriteBlockThread(data: ByteArray) : Thread() {
+        var mData: ByteArray = data
+        override fun run() {
+            var ln = mData!!.size
+            var total = 0
+            var written = 0
+            while (mAudioTrack != null && ln > 0) {
+                try {
+                    written = if (Build.VERSION.SDK_INT >= 23) {
+                        mAudioTrack!!.write(mData, 0, ln, AudioTrack.WRITE_BLOCKING)
+                    } else {
+                        mAudioTrack!!.write(mData, 0, mData!!.size)
+                    }
+                    if (written > 0) {
+                        ln -= written
+                        total += written
+                    }
+                } catch (e: Exception) {
+                    debugLog(e.toString())
+                    return
+                }
+            }
+            if (total < 0) throw RuntimeException()
+            needSomeData(total)
+            mBlockThread = null
+        }
+
+    }
+
 
     private fun startPlayer(result: Result) {
         try {
@@ -365,6 +477,7 @@ public class SoundStreamPlugin : FlutterPlugin,
             if (mAudioTrack?.state == AudioTrack.STATE_INITIALIZED) {
                 mAudioTrack?.stop()
             }
+            mBlockThread = null
             sendPlayerStatus(SoundStreamStatus.Stopped)
             result.success(true)
         } catch (e: Exception) {
@@ -375,6 +488,30 @@ public class SoundStreamPlugin : FlutterPlugin,
     private fun sendPlayerStatus(status: SoundStreamStatus) {
         sendEventMethod("playerStatus", status.name)
     }
+    fun needSomeData(ln: Int) {
+        handler?.post( Runnable {
+            sendEventMethod("needSomeData", ln)
+        })
+    }
+
+    private fun writeBuffer(bufferSize: Int) : Int {
+        var n = 0
+        while (isRecording) {
+            val byteBuffer = ByteBuffer.allocate(bufferSize)
+
+            n = if( Build.VERSION.SDK_INT >= 23) {
+                mRecorder?.read(byteBuffer.array(), 0, bufferSize, AudioRecord.READ_NON_BLOCKING) !!
+            } else {
+                mRecorder?.read(byteBuffer.array(), 0, bufferSize) !!
+            }
+            if( n > 0 ) sendEventMethod("dataPeriod", Arrays.copyOfRange(byteBuffer.array(), 0, n))
+            else break
+        }
+
+        if(isRecording)
+            handler?.post(p)
+        return n
+    }
 
     private fun createRecordListener(): OnRecordPositionUpdateListener? {
         return object : OnRecordPositionUpdateListener {
@@ -384,15 +521,16 @@ public class SoundStreamPlugin : FlutterPlugin,
 
             override fun onPeriodicNotification(recorder: AudioRecord) {
                 val data = audioData!!
-                val shortOut = recorder.read(data, 0, mPeriodFrames)
-                // this condistion to prevent app crash from happening in Android Devices
-                // See issues: https://github.com/CasperPas/flutter-sound-stream/issues/25
-                if (shortOut < 1) { return }
-                // https://flutter.io/platform-channels/#codec
-                // convert short to int because of platform-channel's limitation
-                val byteBuffer = ByteBuffer.allocate(shortOut * 2)
-                byteBuffer.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data)
+                val n: Int = if(Build.VERSION.SDK_INT >= 23) {
+                    recorder.read(data, 0, mRecorderBufferSize, AudioRecord.READ_NON_BLOCKING)
+                } else {
+                    recorder.read(data, 0, mRecorderBufferSize)
+                }
 
+                if( n < 1 ) return
+
+                val byteBuffer = ByteBuffer.allocate(n)
+                byteBuffer.put(data)
                 sendEventMethod("dataPeriod", byteBuffer.array())
             }
         }
