@@ -19,9 +19,7 @@ class StreamPlayer(val m_callback: PlayerCallback) {
     fun closePlayer() {
         stop()
         playerStatus = Sound.PLAYER_STATE.PLAYER_IS_STOPPED
-        mainHandler.post {
-            m_callback.closePlayerCompleted(true)
-        }
+        m_callback.closePlayerCompleted(true)
     }
 
     fun getPlayerState(): Sound.PLAYER_STATE {
