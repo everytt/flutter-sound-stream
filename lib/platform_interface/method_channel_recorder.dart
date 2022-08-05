@@ -28,7 +28,7 @@ import 'package:sound_stream/platform_interface/recorder_platform_interface.dart
 /// An implementation of [UrlLauncherPlatform] that uses method channels.
 class MethodChannelRecorder extends SoundRecorderPlatform
 {
-  static const MethodChannel _channel = MethodChannel('vn.casperpas.sound_stream:methods_recorder');
+  static const MethodChannel _channel = MethodChannel('vn.casperpas.sound_stream:recorder');
 
   /*ctor */ MethodChannelRecorder()
 {
@@ -50,7 +50,7 @@ Future<dynamic>? channelMethodCallHandler(MethodCall call) {
   //bool? success = call.arguments['success'] as bool?;
   bool success = call.arguments['success'] != null ? call.arguments['success'] as bool : false;
 
-  print("[RECODER/DART] FLUTTER channelMethodCallHandler : ${call.method} / recorder :: $aRecorder" );
+  // print("[RECODER/DART] FLUTTER channelMethodCallHandler : ${call.method} / recorder :: $aRecorder" );
   switch (call.method) {
     case "recordingData":
       {

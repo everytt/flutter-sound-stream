@@ -20,8 +20,8 @@ class SoundRecorderManager private constructor(): SoundManager(), MethodChannel.
                 soundRecorderPlugin =
                     SoundRecorderManager()
             }
-            Log.d(TAG, "[flutter] attachRecorder :::: $messenger")
-            val channel = MethodChannel(messenger, "vn.casperpas.sound_stream:methods_recorder")
+            val channel = MethodChannel(messenger, "vn.casperpas.sound_stream:recorder")
+
             soundRecorderPlugin?.init(channel)
             channel.setMethodCallHandler(soundRecorderPlugin)
             context = ctx
@@ -29,7 +29,7 @@ class SoundRecorderManager private constructor(): SoundManager(), MethodChannel.
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        Log.d(TAG, "[flutter] onMethodCall :::: ${call.method}")
+//        Log.d(TAG, "[flutter] onMethodCall :::: ${call.method}")
 
         when (call.method) {
             "resetPlugin" -> {

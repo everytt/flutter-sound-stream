@@ -33,8 +33,10 @@ class SoundStreamPlugin : FlutterPlugin,
 
         pluginBinding = flutterPluginBinding
         pluginContext = flutterPluginBinding.applicationContext
-
-        onAttachedToEngine(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
+        if( !started ) {
+            onAttachedToEngine(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
+            started = true
+        }
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -47,6 +49,8 @@ class SoundStreamPlugin : FlutterPlugin,
     // depending on the user's project. onAttachedToEngine or registerWith must both be defined
     // in the same class.
     companion object {
+        var started:Boolean = false
+
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             println("[flutter] registerWith ++++")

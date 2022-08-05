@@ -49,6 +49,7 @@ class RecorderStream extends RecorderCallback {
   bool get isPaused => (_recorderState == RecorderState.isPaused);
 
   final _lock = Lock();
+  static bool _reStarted = true;
 
   StreamSink<Food>? _userStreamSink;
 
@@ -100,6 +101,14 @@ class RecorderStream extends RecorderCallback {
     _openRecorderCompleter = Completer<RecorderStream>();
     completer = _openRecorderCompleter;
     try {
+
+      if (_reStarted) {
+        // Perhaps a Hot Restart ?  We must reset the plugin
+        print('Resetting flutter_sound Recorder Plugin');
+        _reStarted = false;
+        await SoundRecorderPlatform.instance.resetPlugin(this);
+      }
+
       SoundRecorderPlatform.instance.openSession(this);
       await SoundRecorderPlatform.instance.openRecorder(
         this,

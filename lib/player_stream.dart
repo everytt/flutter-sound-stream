@@ -35,6 +35,7 @@ class PlayerStream implements PlayerCallback {
   PlayerState get playerStatus => _playerState;
 
   final _lock = Lock();
+  static bool _reStarted = true;
 
   StreamSubscription<Food>? _foodStreamSubscription;
   StreamController<Food>? _foodStreamController;
@@ -201,6 +202,13 @@ class PlayerStream implements PlayerCallback {
     Completer<PlayerStream>? completer;
     if (_isInited != Initialized.notInitialized) {
       throw Exception('Player is already initialized');
+    }
+
+    if (_reStarted) {
+      // Perhaps a Hot Restart ?  We must reset the plugin
+      print('Resetting flutter_sound Player Plugin');
+      _reStarted = false;
+      await SoundPlayerPlatform.instance.resetPlugin(this);
     }
 
     SoundPlayerPlatform.instance.openSession(this);

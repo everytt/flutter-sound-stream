@@ -9,13 +9,14 @@ import 'dart:typed_data' show Uint8List;
 /// An implementation of [FlutterSoundPlayerPlatform] that uses method channels.
 class MethodChannelPlayer extends SoundPlayerPlatform
 {
-  static const MethodChannel _channel = MethodChannel("vn.casperpas.sound_stream:methods");
+  static const MethodChannel _channel = MethodChannel("vn.casperpas.sound_stream:player");
 
 
 /* ctor */ MethodChannelPlayer()
 {
   print("FLUTTER ::::: MethodChannelPlayer -> init");
   setCallback();
+
 }
 
 void setCallback()
@@ -31,7 +32,7 @@ Future<dynamic>? channelMethodCallHandler(MethodCall call)
 {
   PlayerCallback aPlayer = getSession(call.arguments!['slotNo'] as int);
   Map arg = call.arguments ;
-  print("[PLAYER/KT] FLUTTER  channelMethodCallHandler : ${call.method}" );
+  // print("[PLAYER/KT] FLUTTER  channelMethodCallHandler : ${call.method}" );
 
   bool success = call.arguments['success'] != null ? call.arguments['success'] as bool : false;
 

@@ -20,7 +20,7 @@ class SoundPlayerManager private constructor() : SoundManager(), MethodChannel.M
                 soundPlayerPlugin =
                     SoundPlayerManager()
             }
-            var channel = MethodChannel(messenger, "vn.casperpas.sound_stream:methods")
+            var channel = MethodChannel(messenger, "vn.casperpas.sound_stream:player")
             soundPlayerPlugin?.init(channel)
             channel.setMethodCallHandler(soundPlayerPlugin)
             context = ctx
@@ -28,6 +28,7 @@ class SoundPlayerManager private constructor() : SoundManager(), MethodChannel.M
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+//        println("[flutter] SoundPlayerManager onMethodCall : ${call.method}")
         when( call.method ) {
             "resetPlugin"-> {
                 resetPlugin(call,result)
