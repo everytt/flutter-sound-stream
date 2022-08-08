@@ -22,9 +22,9 @@ class SoundStreamPlugin : FlutterPlugin,
         ActivityAware {
     private val logTag = "SoundStreamPlugin"
 
-    private var currentActivity: Activity? = null
-    private var pluginContext: Context? = null
-    private var pluginBinding: FlutterPlugin.FlutterPluginBinding? = null
+    var currentActivity: Activity? = null
+    var pluginContext: Context? = null
+    var pluginBinding: FlutterPlugin.FlutterPluginBinding? = null
 
     /** ======== Basic Plugin initialization ======== **/
 
@@ -33,10 +33,7 @@ class SoundStreamPlugin : FlutterPlugin,
 
         pluginBinding = flutterPluginBinding
         pluginContext = flutterPluginBinding.applicationContext
-        if( !started ) {
-            onAttachedToEngine(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
-            started = true
-        }
+        onAttachedToEngine(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -50,6 +47,7 @@ class SoundStreamPlugin : FlutterPlugin,
     // in the same class.
     companion object {
         var started:Boolean = false
+
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
@@ -66,8 +64,14 @@ class SoundStreamPlugin : FlutterPlugin,
     fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger) {
         pluginContext = applicationContext
 
-        SoundPlayerManager.attachSoundPlayer(pluginContext, messenger)
-        SoundRecorderManager.attachRecorder(pluginContext, messenger)
+        val playerManager = SoundPlayerManager(pluginContext, messenger)
+        playerManager.initManager()
+
+        val recorderManager = SoundRecorderManager(pluginContext, messenger)
+        recorderManager.initManager()
+
+//        SoundPlayerManager.attachSoundPlayer(pluginContext, messenger)
+//        SoundRecorderManager.attachRecorder(pluginContext, messenger)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {

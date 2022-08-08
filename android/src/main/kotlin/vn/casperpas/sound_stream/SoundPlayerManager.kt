@@ -6,25 +6,43 @@ import android.util.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.StandardMessageCodec
 
-class SoundPlayerManager private constructor() : SoundManager(), MethodChannel.MethodCallHandler {
+class SoundPlayerManager(val ctx: Context?, val messenger: BinaryMessenger) : SoundManager(), MethodChannel.MethodCallHandler {
 
     companion object {
-        const val TAG = "SoundPlayerManager"
-        var soundPlayerPlugin: SoundPlayerManager? = null
+        const val TAG = "[flutter] SoundPlayerManager"
+//        var soundPlayerPlugin: SoundPlayerManager? = null
         private var context:Context? = null
 
-        fun attachSoundPlayer(ctx: Context?, messenger: BinaryMessenger) {
-            Log.d(TAG, "[flutter] attachSoundPlayer ::::$ctx / $messenger")
-            if (soundPlayerPlugin == null) {
-                soundPlayerPlugin =
-                    SoundPlayerManager()
-            }
-            var channel = MethodChannel(messenger, "vn.casperpas.sound_stream:player")
-            soundPlayerPlugin?.init(channel)
-            channel.setMethodCallHandler(soundPlayerPlugin)
-            context = ctx
-        }
+//        fun attachSoundPlayer(ctx: Context?, messenger: BinaryMessenger) {
+//            Log.d(TAG, "SoundPlayerManager {${hashCode()}} attachSoundPlayer ::::$ctx / $messenger")
+////            if (soundPlayerPlugin == null) {
+////                soundPlayerPlugin =
+////                    SoundPlayerManager()
+////                Log.d(TAG, ">> create SoundPlayerManager ")
+////            }
+//            var channel = MethodChannel(messenger, "vn.casperpas.sound_stream:player")
+//            init(channel)
+//
+//            channel.setMethodCallHandler(this)
+//            context = ctx
+//        }
+    }
+
+
+    fun initManager() {
+        Log.d(TAG, "SoundPlayerManager {${hashCode()}} initManager ::::$ctx / $messenger")
+//            if (soundPlayerPlugin == null) {
+//                soundPlayerPlugin =
+//                    SoundPlayerManager()
+//                Log.d(TAG, ">> create SoundPlayerManager ")
+//            }
+        var channel = MethodChannel(messenger, "vn.casperpas.sound_stream:player")
+        init(channel)
+
+        channel.setMethodCallHandler(this)
+        context = ctx
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -39,7 +57,7 @@ class SoundPlayerManager private constructor() : SoundManager(), MethodChannel.M
         var aPlayer = getSession(call) as SoundPlayer?
         when(call.method) {
             "openPlayer" -> {
-                aPlayer = SoundPlayer(call)
+                aPlayer = SoundPlayer(call, this)
                 initSession(call, aPlayer)
                 aPlayer.openPlayer(call, result)
             }

@@ -5,13 +5,14 @@ import io.flutter.plugin.common.MethodChannel
 import vn.casperpas.sound_stream.engine.PlayerCallback
 import vn.casperpas.sound_stream.engine.StreamPlayer
 
-class SoundPlayer(call:MethodCall) : SoundSession(), PlayerCallback {
+class SoundPlayer(call:MethodCall, plugin: SoundPlayerManager) : SoundSession(), PlayerCallback {
     val ERR_UNKNOWN = "ERR_UNKNOWN"
     val ERR_PLAYER_IS_NULL = "ERR_PLAYER_IS_NULL"
     val ERR_PLAYER_IS_PLAYING = "ERR_PLAYER_IS_PLAYING"
     val TAG = "SoundStreamPlugin"
 
     private val m_player: StreamPlayer = StreamPlayer(this)
+    private val mPlugin = plugin
 
     override fun openPlayerCompleted(success: Boolean) {
         invokeMethodWithBoolean("openPlayerCompleted", success, success)
@@ -44,7 +45,7 @@ class SoundPlayer(call:MethodCall) : SoundSession(), PlayerCallback {
     }
 
     override fun getPlugin(): SoundManager {
-        return SoundPlayerManager.soundPlayerPlugin!!
+        return mPlugin
     }
 
     override val status: Int

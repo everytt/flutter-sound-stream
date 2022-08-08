@@ -6,7 +6,7 @@ import io.flutter.plugin.common.MethodChannel
 import vn.casperpas.sound_stream.engine.RecorderCallback
 import vn.casperpas.sound_stream.engine.StreamRecorder
 
-class SoundRecorder(call:MethodCall) : SoundSession(), RecorderCallback {
+class SoundRecorder(call:MethodCall, private val channel: SoundManager) : SoundSession(), RecorderCallback {
     val ERR_UNKNOWN = "ERR_UNKNOWN"
     val ERR_RECORDER_IS_NULL = "ERR_RECORDER_IS_NULL"
     val ERR_RECORDER_IS_RECORDING = "ERR_RECORDER_IS_RECORDING"
@@ -15,7 +15,7 @@ class SoundRecorder(call:MethodCall) : SoundSession(), RecorderCallback {
     val m_recorder : StreamRecorder = StreamRecorder(this)
 
     override fun getPlugin(): SoundManager {
-        return SoundRecorderManager.soundRecorderPlugin!!
+        return channel
     }
 
     override val status: Int
