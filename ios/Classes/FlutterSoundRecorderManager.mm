@@ -53,7 +53,7 @@ extern void FlutterSoundRecorderReg(NSObject<FlutterPluginRegistrar>* registrar)
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar
 {
-        FlutterMethodChannel* aChannel = [FlutterMethodChannel methodChannelWithName:@"com.dooboolab.flutter_sound_recorder"
+        FlutterMethodChannel* aChannel = [FlutterMethodChannel methodChannelWithName:@"vn.casperpas.sound_stream:recorder"
                                         binaryMessenger:[registrar messenger]];
         //if (flutterSoundRecorderManager != nil)
                 //NSLog(@"ERROR during registerWithRegistrar: flutterSoundRecorderManager != nil");
