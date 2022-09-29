@@ -35,10 +35,10 @@
 
 
 
-extern void FlutterSoundRecorderReg(NSObject<FlutterPluginRegistrar>* registrar)
-{
-        [FlutterSoundRecorderManager registerWithRegistrar: registrar];
-}
+//extern void FlutterSoundRecorderReg(NSObject<FlutterPluginRegistrar>* registrar)
+//{
+//        [FlutterSoundRecorderManager registerWithRegistrar: registrar];
+//}
 
 
 

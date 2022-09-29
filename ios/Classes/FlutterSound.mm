@@ -39,8 +39,11 @@
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar
 {
-        FlutterSoundPlayerReg(registrar);
-        FlutterSoundRecorderReg(registrar);
+        [FlutterSoundPlayerManager registerWithRegistrar: registrar];
+        [FlutterSoundRecorderManager registerWithRegistrar: registrar];
+
+        // FlutterSoundPlayerReg(registrar);
+        // FlutterSoundRecorderReg(registrar);
 }
 
 @end

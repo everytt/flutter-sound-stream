@@ -24,7 +24,7 @@
 
 #import "FlutterSoundManager.h"
 
-extern void FlutterSoundPlayerReg(NSObject<FlutterPluginRegistrar>* registrar);
+//extern void FlutterSoundPlayerReg(NSObject<FlutterPluginRegistrar>* registrar);
 
 @interface FlutterSoundPlayerManager : FlutterSoundManager 
 {

@@ -66,10 +66,10 @@
         return self;
 }
 
-extern void FlutterSoundPlayerReg(NSObject<FlutterPluginRegistrar>* registrar)
-{
-        [FlutterSoundPlayerManager registerWithRegistrar: registrar];
-}
+// extern void FlutterSoundPlayerReg(NSObject<FlutterPluginRegistrar>* registrar)
+// {
+//         [FlutterSoundPlayerManager registerWithRegistrar: registrar];
+// }
 
 - (FlutterSoundPlayerManager*)getManager
 {
