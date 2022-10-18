@@ -220,7 +220,7 @@
   
         bool b =
         [
-                flautoPlayer startPlayerCodec: codec
+                flautoPlayer startPlayerCodec: pcm16
                 fromURI: path
                 fromDataBuffer: data
                 channels: channels

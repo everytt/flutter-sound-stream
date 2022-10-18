@@ -67,6 +67,12 @@ class SoundRecorder(call:MethodCall, private val channel: SoundManager) : SoundS
     fun startRecorder(call: MethodCall, result: MethodChannel.Result) {
             val sampleRate = call.argument<Int>("sampleRate") ?: 16000
             val numChannels = call.argument<Int>("numChannels")  ?: 1
+            val path = call.argument<String>("path")
+            val codec = call.argument<Int>("codec")
+            val bitRate = call.argument<Int>("bitRate")
+            val audioSource = call.argument<Int>("audioSource")
+            val toStream = call.argument<Int>("toStream")
+
             val r: Boolean = m_recorder.startRecorder(
                 numChannels,
                 sampleRate,

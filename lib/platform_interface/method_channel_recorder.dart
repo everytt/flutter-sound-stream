@@ -17,185 +17,200 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-
 import 'dart:async';
 
-import 'package:logger/logger.dart' show Level , Logger;
+import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter/services.dart';
 import 'package:sound_stream/platform_interface/recorder_platform_interface.dart';
-
+import 'package:sound_stream/platform_interface/sound_stream_platfrom_interface.dart';
 
 /// An implementation of [UrlLauncherPlatform] that uses method channels.
-class MethodChannelRecorder extends SoundRecorderPlatform
-{
+class MethodChannelRecorder extends SoundRecorderPlatform {
   static const MethodChannel _channel = MethodChannel('vn.casperpas.sound_stream:recorder');
 
-  /*ctor */ MethodChannelRecorder()
-{
-  _setCallback();
-}
-
-void _setCallback()
-{
-  _channel.setMethodCallHandler((MethodCall call)
-  {
-    return channelMethodCallHandler(call)!;
-  });
-}
-
-
-
-Future<dynamic>? channelMethodCallHandler(MethodCall call) {
-  RecorderCallback? aRecorder = getSession(call.arguments['slotNo'] as int);
-  //bool? success = call.arguments['success'] as bool?;
-  bool success = call.arguments['success'] != null ? call.arguments['success'] as bool : false;
-
-  // print("[RECODER/DART] FLUTTER channelMethodCallHandler : ${call.method} / recorder :: $aRecorder" );
-  switch (call.method) {
-    case "recordingData":
-      {
-        aRecorder!.recordingData(data: call.arguments['recordingData'] );
-      }
-      break;
-
-    case "startRecorderCompleted":
-      {
-        aRecorder!.startRecorderCompleted(call.arguments['state'], success );
-      }
-      break;
-
-    case "stopRecorderCompleted":
-      {
-        aRecorder!.stopRecorderCompleted(call.arguments['state'] , success);
-      }
-      break;
-
-    case "pauseRecorderCompleted":
-      {
-        aRecorder!.pauseRecorderCompleted(call.arguments['state'] , success);
-      }
-      break;
-
-    case "resumeRecorderCompleted":
-      {
-        aRecorder!.resumeRecorderCompleted(call.arguments['state'] , success);
-      }
-      break;
-
-    case "openRecorderCompleted":
-      {
-        aRecorder!.openRecorderCompleted(call.arguments['state'], success );
-      }
-      break;
-
-    case "closeRecorderCompleted":
-      {
-        aRecorder!.closeRecorderCompleted(call.arguments['state'], success );
-      }
-      break;
-
-    case "log":
-      {
-        aRecorder!.log(Level.values[call.arguments['logLevel']], call.arguments['msg']);
-      }
-      break;
-
-
-    default:
-      throw ArgumentError('Unknown method ${call.method}');
+  /*ctor */ MethodChannelRecorder() {
+    _setCallback();
   }
 
-  return null;
-}
+  void _setCallback() {
+    _channel.setMethodCallHandler((MethodCall call) {
+      return channelMethodCallHandler(call)!;
+    });
+  }
 
+  Future<dynamic>? channelMethodCallHandler(MethodCall call) {
+    RecorderCallback? aRecorder = getSession(call.arguments['slotNo'] as int);
+    //bool? success = call.arguments['success'] as bool?;
+    bool success = call.arguments['success'] != null ? call.arguments['success'] as bool : false;
 
+    switch (call.method) {
+      case "recordingData":
+        {
+          aRecorder!.recordingData(data: call.arguments['recordingData']);
+        }
+        break;
 
-Future<void> invokeMethodVoid (RecorderCallback callback,  String methodName, Map<String, dynamic> call)
-{
-  call['slotNo'] = findSession(callback);
-  return _channel.invokeMethod(methodName, call);
-}
+      case "startRecorderCompleted":
+        {
+          aRecorder!.startRecorderCompleted(call.arguments['state'], success);
+        }
+        break;
 
+      case "stopRecorderCompleted":
+        {
+          aRecorder!.stopRecorderCompleted(call.arguments['state'], success);
+        }
+        break;
 
-Future<int?> invokeMethodInt (RecorderCallback callback,  String methodName, Map<String, dynamic> call)
-{
-  call['slotNo'] = findSession(callback);
-  return _channel.invokeMethod(methodName, call);
-}
+      case "pauseRecorderCompleted":
+        {
+          aRecorder!.pauseRecorderCompleted(call.arguments['state'], success);
+        }
+        break;
 
+      case "resumeRecorderCompleted":
+        {
+          aRecorder!.resumeRecorderCompleted(call.arguments['state'], success);
+        }
+        break;
 
-Future<bool> invokeMethodBool (RecorderCallback callback,  String methodName, Map<String, dynamic> call) async
-{
-  call['slotNo'] = findSession(callback);
-  bool r = await _channel.invokeMethod(methodName, call) as bool;
-  return r;
-}
+      case "openRecorderCompleted":
+        {
+          aRecorder!.openRecorderCompleted(call.arguments['state'], success);
+        }
+        break;
 
-Future<String?> invokeMethodString (RecorderCallback callback, String methodName, Map<String, dynamic> call)
-{
-  call['slotNo'] = findSession(callback);
-  return _channel.invokeMethod(methodName, call);
-}
+      case "closeRecorderCompleted":
+        {
+          aRecorder!.closeRecorderCompleted(call.arguments['state'], success);
+        }
+        break;
 
+      case "log":
+        {
+          aRecorder!.log(Level.values[call.arguments['logLevel']], call.arguments['msg']);
+        }
+        break;
 
-@override
-Future<void>? setLogLevel(RecorderCallback callback, Level logLevel)
-{
-  return invokeMethodVoid( callback, 'setLogLevel', {'logLevel': logLevel.index,});
-}
+      default:
+        throw ArgumentError('Unknown method ${call.method}');
+    }
 
-@override
-Future<void>? resetPlugin(RecorderCallback callback,)
-{
-  return invokeMethodVoid( callback, 'resetPlugin', Map<String, dynamic>(),);
-}
+    return null;
+  }
 
-@override
-Future<void> openRecorder( RecorderCallback callback, {required Level logLevel,  })
-{
-  return invokeMethodVoid( callback, 'openRecorder', {'logLevel': logLevel.index,  },) ;
-}
+  Future<void> invokeMethodVoid(RecorderCallback callback, String methodName, Map<String, dynamic> call) {
+    call['slotNo'] = findSession(callback);
+    return _channel.invokeMethod(methodName, call);
+  }
 
-@override
-Future<void> closeRecorder(RecorderCallback callback, )
-{
-  return invokeMethodVoid( callback, 'closeRecorder',  Map<String, dynamic>(),);
-}
+  Future<int?> invokeMethodInt(RecorderCallback callback, String methodName, Map<String, dynamic> call) {
+    call['slotNo'] = findSession(callback);
+    return _channel.invokeMethod(methodName, call);
+  }
 
-@override
-Future<void> startRecorder(RecorderCallback callback,
-    {
-      int? sampleRate,
-      int? numChannels,
-      int? bitRate,
-      AudioSource? audioSource,
-    })
-{
-  return invokeMethodVoid( callback, 'startRecorder',
-    {
-      'sampleRate': sampleRate,
-      'numChannels': numChannels,
-      'bitRate': bitRate,
-      'audioSource': audioSource!.index,
-    },);
-}
+  Future<bool> invokeMethodBool(RecorderCallback callback, String methodName, Map<String, dynamic> call) async {
+    call['slotNo'] = findSession(callback);
+    bool r = await _channel.invokeMethod(methodName, call) as bool;
+    return r;
+  }
 
-@override
-Future<void> stopRecorder(RecorderCallback callback,  )
-{
-  return invokeMethodVoid( callback, 'stopRecorder',  Map<String, dynamic>(),) ;
-}
+  Future<String?> invokeMethodString(RecorderCallback callback, String methodName, Map<String, dynamic> call) {
+    call['slotNo'] = findSession(callback);
+    return _channel.invokeMethod(methodName, call);
+  }
 
-@override
-Future<void> pauseRecorder(RecorderCallback callback,  )
-{
-  return invokeMethodVoid( callback, 'pauseRecorder',  Map<String, dynamic>(),) ;
-}
+  @override
+  Future<void>? setLogLevel(RecorderCallback callback, Level logLevel) {
+    return invokeMethodVoid(callback, 'setLogLevel', {
+      'logLevel': logLevel.index,
+    });
+  }
 
-@override
-Future<void> resumeRecorder(RecorderCallback callback, )
-{
-  return invokeMethodVoid( callback, 'resumeRecorder', Map<String, dynamic>(),) ;
-}
+  @override
+  Future<void>? resetPlugin(
+    RecorderCallback callback,
+  ) {
+    return invokeMethodVoid(
+      callback,
+      'resetPlugin',
+      Map<String, dynamic>(),
+    );
+  }
 
+  @override
+  Future<void> openRecorder(
+    RecorderCallback callback, {
+    required Level logLevel,
+  }) {
+    return invokeMethodVoid(
+      callback,
+      'openRecorder',
+      {
+        'logLevel': logLevel.index,
+      },
+    );
+  }
+
+  @override
+  Future<void> startRecorder(RecorderCallback callback,
+      {String? path, int? sampleRate, int? numChannels, int? bitRate, bool? toStream, Codec? codec, AudioSource? audioSource}) {
+    return invokeMethodVoid(
+      callback,
+      'startRecorder',
+      {
+        'path': path,
+        'sampleRate': sampleRate,
+        'numChannels': numChannels,
+        'bitRate': bitRate,
+        'codec': codec!.index,
+        'toStream': toStream! ? 1 : 0,
+        'audioSource': audioSource!.index,
+      },
+    );
+  }
+
+  @override
+  Future<void> closeRecorder(
+    RecorderCallback callback,
+  ) {
+    return invokeMethodVoid(
+      callback,
+      'closeRecorder',
+      Map<String, dynamic>(),
+    );
+  }
+
+  @override
+  Future<void> stopRecorder(
+    RecorderCallback callback,
+  ) {
+    return invokeMethodVoid(
+      callback,
+      'stopRecorder',
+      Map<String, dynamic>(),
+    );
+  }
+
+  @override
+  Future<void> pauseRecorder(
+    RecorderCallback callback,
+  ) {
+    return invokeMethodVoid(
+      callback,
+      'pauseRecorder',
+      Map<String, dynamic>(),
+    );
+  }
+
+  @override
+  Future<void> resumeRecorder(
+    RecorderCallback callback,
+  ) {
+    return invokeMethodVoid(
+      callback,
+      'resumeRecorder',
+      Map<String, dynamic>(),
+    );
+  }
 }

@@ -145,7 +145,8 @@
         NSNumber* bitRateArgs = (NSNumber*)call.arguments[@"bitRate"];
         NSNumber* codec = (NSNumber*)call.arguments[@"codec"];
 
-        t_CODEC coder = aacADTS;
+
+        t_CODEC coder = pcm16;
         if (![codec isKindOfClass:[NSNull class]])
         {
                 coder = (t_CODEC)([codec intValue]);
@@ -184,7 +185,7 @@
         {
                         [FlutterError
                         errorWithCode:@"Audio Player"
-                        message:@"startPlayer failure"
+                        message:@"startRecorder failure"
                         details:nil];
         }
 

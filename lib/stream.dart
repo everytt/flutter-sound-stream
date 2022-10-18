@@ -20,6 +20,28 @@ enum Initialized {
   fullyInitialized,
 }
 
+const List<String> ext = [
+  '', // defaultCodec
+  '.aac', // aacADTS
+  '.opus', // opusOGG
+  '.caf', // opusCAF
+  '.mp3', // mp3
+  '.ogg', // vorbisOGG
+  '.pcm', // pcm16
+  '.wav', // pcm16WAV
+  '.aiff', // pcm16AIFF
+  '_pcm.caf', // pcm16CAF
+  '.flac', // flac
+  '.mp4', // aacMP4
+  '.amr', // AMR-NB
+  '.amr', // amr-WB
+  '.pcm', // pcm8
+  '.pcm', // pcmFloat32
+  '.pcm', //codec.pcmWebM,
+  '.webm', // codec.opusWebM,
+  '.webm', // codec.vorbisWebM,
+];
+
 /// Food is an abstract class which represents objects that can be sent
 /// to a player when playing data from astream or received by a recorder
 /// when recording to a Dart Stream.

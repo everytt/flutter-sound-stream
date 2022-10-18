@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:sound_stream/platform_interface/recorder_platform_interface.dart';
+import 'package:sound_stream/platform_interface/sound_stream_platfrom_interface.dart';
 import 'package:sound_stream/stream.dart';
 import 'package:synchronized/synchronized.dart';
 import 'sound_stream.dart';
@@ -101,7 +102,6 @@ class RecorderStream extends RecorderCallback {
     _openRecorderCompleter = Completer<RecorderStream>();
     completer = _openRecorderCompleter;
     try {
-
       if (_reStarted) {
         // Perhaps a Hot Restart ?  We must reset the plugin
         print('Resetting flutter_sound Recorder Plugin');
@@ -175,8 +175,14 @@ class RecorderStream extends RecorderCallback {
     _startRecorderCompleter = Completer<void>();
     completer = _startRecorderCompleter;
     try {
-      await SoundRecorderPlatform.instance
-          .startRecorder(this, sampleRate: sampleRate, numChannels: numChannels, bitRate: bitRate, audioSource: audioSource);
+      await SoundRecorderPlatform.instance.startRecorder(this,
+          path: toFile,
+          sampleRate: sampleRate,
+          numChannels: numChannels,
+          bitRate: bitRate,
+          toStream: toStream != null,
+          codec: Codec.pcm16,
+          audioSource: audioSource);
 
       _recorderState = RecorderState.isRecording;
     } on Exception {
@@ -223,7 +229,7 @@ class RecorderStream extends RecorderCallback {
     }
     if (_isInited != Initialized.fullyInitialized) {
       _logger.d('<--- _stopRecorder : Recorder is not open');
-      return ; //'Recorder is not open';
+      return; //'Recorder is not open';
     }
     String? r;
 

@@ -3,14 +3,13 @@ import 'dart:typed_data' show Uint8List;
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:sound_stream/platform_interface/method_channel_recorder.dart';
-
+import 'package:sound_stream/platform_interface/sound_stream_platfrom_interface.dart';
 
 enum RecorderState {
   isStopped,
   isPaused,
   isRecording,
 }
-
 
 enum AudioSource {
   defaultSource,
@@ -23,16 +22,14 @@ enum AudioSource {
   voice_communication,
   voice_performance,
   voice_recognition,
-  voiceUpLink,// (it does not work, at least on Android. Probably problems with the authorization )
+  voiceUpLink, // (it does not work, at least on Android. Probably problems with the authorization )
   bluetoothHFP,
   headsetMic,
   lineIn,
 }
 
-
-abstract class RecorderCallback
-{
-  void recordingData({Uint8List? data} );
+abstract class RecorderCallback {
+  void recordingData({Uint8List? data});
   void startRecorderCompleted(int? state, bool? success);
   void pauseRecorderCompleted(int? state, bool? success);
   void resumeRecorderCompleted(int? state, bool? success);
@@ -40,12 +37,9 @@ abstract class RecorderCallback
   void openRecorderCompleted(int? state, bool? success);
   void closeRecorderCompleted(int? state, bool? success);
   void log(Level logLevel, String msg);
-
 }
 
-
 abstract class SoundRecorderPlatform extends PlatformInterface {
-
   /// Constructs a UrlLauncherPlatform.
   SoundRecorderPlatform() : super(token: _token);
 
@@ -65,31 +59,22 @@ abstract class SoundRecorderPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-
-
   List<RecorderCallback?> _slots = [];
 
-
-  int findSession(RecorderCallback aSession)
-  {
-    for (var i = 0; i < _slots.length; ++i)
-    {
-      if (_slots[i] == aSession)
-      {
+  int findSession(RecorderCallback aSession) {
+    for (var i = 0; i < _slots.length; ++i) {
+      if (_slots[i] == aSession) {
         return i;
       }
     }
     return -1;
   }
 
-  void openSession(RecorderCallback aSession)
-  {
+  void openSession(RecorderCallback aSession) {
     assert(findSession(aSession) == -1);
 
-    for (var i = 0; i < _slots.length; ++i)
-    {
-      if (_slots[i] == null)
-      {
+    for (var i = 0; i < _slots.length; ++i) {
+      if (_slots[i] == null) {
         _slots[i] = aSession;
         return;
       }
@@ -97,63 +82,65 @@ abstract class SoundRecorderPlatform extends PlatformInterface {
     _slots.add(aSession);
   }
 
-  void closeSession(RecorderCallback aSession)
-  {
+  void closeSession(RecorderCallback aSession) {
     _slots[findSession(aSession)] = null;
   }
 
-  RecorderCallback? getSession(int slotno)
-  {
+  RecorderCallback? getSession(int slotno) {
     return _slots[slotno];
   }
 
-
-
-  Future<void>? setLogLevel(RecorderCallback callback, Level loglevel)
-  {
+  Future<void>? setLogLevel(RecorderCallback callback, Level loglevel) {
     throw UnimplementedError('setLogLeve() has not been implemented.');
   }
 
-
-  Future<void>?   resetPlugin(RecorderCallback callback,)
-  {
+  Future<void>? resetPlugin(
+    RecorderCallback callback,
+  ) {
     throw UnimplementedError('resetPlugin() has not been implemented.');
   }
 
-
-  Future<void> openRecorder(RecorderCallback callback, {required Level logLevel, })
-  {
+  Future<void> openRecorder(
+    RecorderCallback callback, {
+    required Level logLevel,
+  }) {
     throw UnimplementedError('openRecorder() has not been implemented.');
   }
 
-  Future<void> closeRecorder(RecorderCallback callback, )
-  {
+  Future<void> closeRecorder(
+    RecorderCallback callback,
+  ) {
     throw UnimplementedError('closeRecorder() has not been implemented.');
   }
 
-  Future<void> startRecorder(RecorderCallback callback,
-      {
-        int? sampleRate,
-        int? numChannels,
-        int? bitRate,
-        AudioSource? audioSource,
-      })
-  {
+  Future<void> startRecorder(
+    RecorderCallback callback, {
+    String? path,
+    int? sampleRate,
+    int? numChannels,
+    int? bitRate,
+    bool? toStream,
+    Codec? codec,
+    AudioSource? audioSource,
+  }) {
     throw UnimplementedError('startRecorder() has not been implemented.');
   }
 
-  Future<void> stopRecorder(RecorderCallback callback, )
-  {
+  Future<void> stopRecorder(
+    RecorderCallback callback,
+  ) {
     throw UnimplementedError('stopRecorder() has not been implemented.');
   }
 
-  Future<void> pauseRecorder(RecorderCallback callback, )
-  {
+  Future<void> pauseRecorder(
+    RecorderCallback callback,
+  ) {
     throw UnimplementedError('pauseRecorder() has not been implemented.');
   }
 
-  Future<void> resumeRecorder(RecorderCallback callback, )
-  {
+  Future<void> resumeRecorder(
+    RecorderCallback callback,
+  ) {
     throw UnimplementedError('resumeRecorder() has not been implemented.');
   }
-  }
+}
