@@ -9,7 +9,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.StandardMessageCodec
 
 class SoundPlayerManager(val ctx: Context?, val messenger: BinaryMessenger) : SoundManager(), MethodChannel.MethodCallHandler {
-
+    var audioPlayer: SoundPlayer? = null
     companion object {
         const val TAG = "[flutter] SoundPlayerManager"
 //        var soundPlayerPlugin: SoundPlayerManager? = null
@@ -45,6 +45,10 @@ class SoundPlayerManager(val ctx: Context?, val messenger: BinaryMessenger) : So
         context = ctx
     }
 
+    fun destroy() {
+        channel?.setMethodCallHandler(null)
+    }
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
 //        println("[flutter] SoundPlayerManager onMethodCall : ${call.method}")
         when( call.method ) {
@@ -54,20 +58,20 @@ class SoundPlayerManager(val ctx: Context?, val messenger: BinaryMessenger) : So
             }
         }
 
-        var aPlayer = getSession(call) as SoundPlayer?
+        audioPlayer = getSession(call) as SoundPlayer?
         when(call.method) {
             "openPlayer" -> {
-                aPlayer = SoundPlayer(call, this)
-                initSession(call, aPlayer)
-                aPlayer.openPlayer(call, result)
+                audioPlayer = SoundPlayer(call, this)
+                initSession(call, audioPlayer!!)
+                audioPlayer!!.openPlayer(call, result)
             }
-            "closePlayer" -> aPlayer?.closePlayer(call, result)
-            "getPlayerState" -> aPlayer?.getPlayerState(call, result)
-            "startPlayer" -> aPlayer?.startPlayer(call, result)
-            "stopPlayer" -> aPlayer?.stopPlayer(call, result)
-            "pausePlayer" -> aPlayer?.pausePlayer(call, result)
-            "resumePlayer" -> aPlayer?.resumePlayer(call, result)
-            "feed" -> aPlayer?.feed(call, result)
+            "closePlayer" -> audioPlayer?.closePlayer(call, result)
+            "getPlayerState" -> audioPlayer?.getPlayerState(call, result)
+            "startPlayer" -> audioPlayer?.startPlayer(call, result)
+            "stopPlayer" -> audioPlayer?.stopPlayer(call, result)
+            "pausePlayer" -> audioPlayer?.pausePlayer(call, result)
+            "resumePlayer" -> audioPlayer?.resumePlayer(call, result)
+            "feed" -> audioPlayer?.feed(call, result)
             "setLogLevel" -> {
                 //aPlayer.setLogLevel(call, result)
             }

@@ -26,6 +26,9 @@ class SoundStreamPlugin : FlutterPlugin,
     var pluginContext: Context? = null
     var pluginBinding: FlutterPlugin.FlutterPluginBinding? = null
 
+    private var playerManager: SoundPlayerManager? = null
+    private var recorderManager: SoundRecorderManager? = null
+
     /** ======== Basic Plugin initialization ======== **/
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -51,30 +54,30 @@ class SoundStreamPlugin : FlutterPlugin,
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            println("[flutter] registerWith ++++")
             val plugin = SoundStreamPlugin()
             plugin.currentActivity = registrar.activity()
             plugin.pluginContext = registrar.context()
             plugin.onAttachedToEngine(registrar.context(), registrar.messenger())
-            print("[flutter] registerWith -----")
-
         }
     }
 
     fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger) {
         pluginContext = applicationContext
 
-        val playerManager = SoundPlayerManager(pluginContext, messenger)
-        playerManager.initManager()
+        playerManager = SoundPlayerManager(pluginContext, messenger)
+        playerManager?.initManager()
 
-        val recorderManager = SoundRecorderManager(pluginContext, messenger)
-        recorderManager.initManager()
+        recorderManager = SoundRecorderManager(pluginContext, messenger)
+        recorderManager?.initManager()
 
 //        SoundPlayerManager.attachSoundPlayer(pluginContext, messenger)
 //        SoundRecorderManager.attachRecorder(pluginContext, messenger)
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        playerManager?.destroy()
+        recorderManager?.destroy()
+
     }
 
     override fun onDetachedFromActivity() {
@@ -85,7 +88,6 @@ class SoundStreamPlugin : FlutterPlugin,
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        println("[flutter] onAttachedToActivity ++++")
 
         currentActivity = binding.activity
 

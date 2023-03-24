@@ -9,6 +9,8 @@ import io.flutter.plugin.common.StandardMethodCodec
 
 
 class SoundRecorderManager(val ctx: Context?, val messenger: BinaryMessenger): SoundManager(), MethodChannel.MethodCallHandler{
+    var audioRecorder: SoundRecorder? = null
+
     companion object {
         const val TAG = "SoundRecorderManager"
 
@@ -35,8 +37,14 @@ class SoundRecorderManager(val ctx: Context?, val messenger: BinaryMessenger): S
         channel.setMethodCallHandler(this)
     }
 
+
+    fun destroy() {
+        audioRecorder?.closeRecorder(null, null)
+        channel?.setMethodCallHandler(null)
+    }
+
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-//        Log.d(TAG, "[flutter] onMethodCall :::: ${call.method}")
+       Log.d(TAG, "[flutter] onMethodCall :::: ${call.method}")
 
         when (call.method) {
             "resetPlugin" -> {
@@ -45,27 +53,27 @@ class SoundRecorderManager(val ctx: Context?, val messenger: BinaryMessenger): S
             }
         }
 
-        var aRecorder = getSession(call) as SoundRecorder?
+        audioRecorder = getSession(call) as SoundRecorder?
         when (call.method) {
             "openRecorder" -> {
-                aRecorder = SoundRecorder(call, this)
-                initSession(call, aRecorder)
-                aRecorder.openRecorder(call, result)
+                audioRecorder = SoundRecorder(call, this)
+                initSession(call, audioRecorder!!)
+                audioRecorder?.openRecorder(call, result)
             }
             "closeRecorder" -> {
-                aRecorder!!.closeRecorder(call, result)
+                audioRecorder?.closeRecorder(call, result)
             }
             "startRecorder" -> {
-                aRecorder!!.startRecorder(call, result)
+                audioRecorder?.startRecorder(call, result)
             }
             "stopRecorder" -> {
-                aRecorder!!.stopRecorder(call, result)
+                audioRecorder?.stopRecorder(call, result)
             }
             "pauseRecorder" -> {
-                aRecorder!!.pauseRecorder(call, result)
+                audioRecorder?.pauseRecorder(call, result)
             }
             "resumeRecorder" -> {
-                aRecorder!!.resumeRecorder(call, result)
+                audioRecorder?.resumeRecorder(call, result)
             }
             "setLogLevel" -> {
 //                aRecorder.setLogLevel(call, result)

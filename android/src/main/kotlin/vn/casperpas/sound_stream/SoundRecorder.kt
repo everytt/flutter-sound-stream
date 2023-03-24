@@ -101,9 +101,9 @@ class SoundRecorder(call:MethodCall, private val channel: SoundManager) : SoundS
         result.success("Recorder is resumed")
     }
 
-    fun closeRecorder(call: MethodCall?, result: MethodChannel.Result) {
+    fun closeRecorder(call: MethodCall?, result: MethodChannel.Result?) {
         m_recorder.closeRecorder()
-        result.success("closeRecorder")
+        result?.success("closeRecorder")
     }
 
     override fun reset(call: MethodCall?, result: MethodChannel.Result?) {
