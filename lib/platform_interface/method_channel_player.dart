@@ -38,7 +38,7 @@ class MethodChannelPlayer extends SoundPlayerPlatform {
         break;
       case 'startPlayerCompleted':
         {
-          int duration = arg['duration'] as int;
+          //int duration = arg['duration'] as int;
           aPlayer.startPlayerCompleted(call.arguments['state'], success);
         }
         break;
