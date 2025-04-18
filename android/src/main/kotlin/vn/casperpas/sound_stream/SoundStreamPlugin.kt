@@ -14,7 +14,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.PluginRegistry.Registrar
+// import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.*
 
 /** SoundStreamPlugin */
@@ -52,13 +52,13 @@ class SoundStreamPlugin : FlutterPlugin,
         var started:Boolean = false
 
 
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            val plugin = SoundStreamPlugin()
-            plugin.currentActivity = registrar.activity()
-            plugin.pluginContext = registrar.context()
-            plugin.onAttachedToEngine(registrar.context(), registrar.messenger())
-        }
+        // @JvmStatic
+        // fun registerWith(registrar: Registrar) {
+        //     val plugin = SoundStreamPlugin()
+        //     plugin.currentActivity = registrar.activity()
+        //     plugin.pluginContext = registrar.context()
+        //     plugin.onAttachedToEngine(registrar.context(), registrar.messenger())
+        // }
     }
 
     fun onAttachedToEngine(applicationContext: Context, messenger: BinaryMessenger) {
