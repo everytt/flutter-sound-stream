@@ -32,8 +32,8 @@ class RecorderEngine {
             else break
         }
 
-        if(isRecording)
-            mainHandler?.post(p)
+        if(isRecording && p != null )
+            mainHandler?.post(p!!)
         return n
     }
 
@@ -65,7 +65,7 @@ class RecorderEngine {
                         var n:Int = writeBuffer(bufferSize)
                     }
                 }
-                mainHandler?.post(p)
+                mainHandler?.post(p!!)
             } else {
                 throw Exception("Cannot initialize the AudioRecord")
             }
